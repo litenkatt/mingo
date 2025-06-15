@@ -10,7 +10,7 @@
       "path": "./apps/backend"
     },
     {
-      "path": "./packages/types"
+      "path": "./libs/types"
     }
   ]
 }
