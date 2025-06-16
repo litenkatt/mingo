@@ -1,8 +1,23 @@
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  TextField,
+  Toolbar,
+  Typography,
+} from '@mui/material';
 import { useState } from 'react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
 export function Chat() {
   const [username, setUsername] = useState('');
+  const [pendingUsername, setPendingUsername] = useState('');
   const [message, setMessage] = useState('');
   const [roomName, setRoomName] = useState('');
   const [roomId, setRoomId] = useState('');
@@ -16,7 +31,7 @@ export function Chat() {
     sendMessage,
   } = useWebSocket();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (message.trim()) {
       sendMessage(message);
@@ -26,158 +41,155 @@ export function Chat() {
 
   if (!username) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4">Enter your username</h2>
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Typography variant="h5" gutterBottom>
+            Enter your username
+          </Typography>
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (username.trim()) setUsername(username.trim());
+              if (pendingUsername.trim()) setUsername(pendingUsername.trim());
             }}
           >
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full p-2 border rounded mb-4"
-              placeholder="Username"
+            <TextField
+              fullWidth
+              label="Username"
+              value={pendingUsername}
+              onChange={(e) => setPendingUsername(e.target.value)}
+              margin="normal"
             />
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-            >
+            <Button fullWidth type="submit" variant="contained">
               Continue
-            </button>
+            </Button>
           </form>
-        </div>
-      </div>
+        </Paper>
+      </Container>
     );
   }
 
   if (!currentRoom) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4">
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Typography variant="h5" gutterBottom>
             Join or Create a Chat Room
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Create a new room</h3>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (roomName.trim()) {
-                    setIsCreating(true);
-                    createRoom(roomName.trim(), username);
-                  }
-                }}
+          </Typography>
+          <Box mb={4}>
+            <Typography variant="subtitle1">Create a new room</Typography>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (roomName.trim()) {
+                  setIsCreating(true);
+                  createRoom(roomName.trim(), username);
+                }
+              }}
+            >
+              <TextField
+                fullWidth
+                label="Room name"
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)}
+                margin="normal"
+              />
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                disabled={isCreating}
               >
-                <input
-                  type="text"
-                  value={roomName}
-                  onChange={(e) => setRoomName(e.target.value)}
-                  className="w-full p-2 border rounded mb-2"
-                  placeholder="Room name"
-                />
-                <button
-                  type="submit"
-                  disabled={isCreating}
-                  className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600 disabled:opacity-50"
-                >
-                  {isCreating ? 'Creating...' : 'Create Room'}
-                </button>
-              </form>
-            </div>
-            <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold mb-2">
-                Join an existing room
-              </h3>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (roomId.trim()) {
-                    joinRoom(roomId.trim(), username);
-                  }
-                }}
-              >
-                <input
-                  type="text"
-                  value={roomId}
-                  onChange={(e) => setRoomId(e.target.value)}
-                  className="w-full p-2 border rounded mb-2"
-                  placeholder="Room code"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-                >
-                  Join Room
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+                {isCreating ? 'Creating...' : 'Create Room'}
+              </Button>
+            </form>
+          </Box>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="subtitle1">Join an existing room</Typography>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (roomId.trim()) joinRoom(roomId.trim(), username);
+            }}
+          >
+            <TextField
+              fullWidth
+              label="Room code"
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+              margin="normal"
+            />
+            <Button fullWidth type="submit" variant="contained" color="primary">
+              Join Room
+            </Button>
+          </form>
+        </Paper>
+      </Container>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <div className="p-4 bg-white shadow">
-        <h1 className="text-xl font-bold">{currentRoom.name}</h1>
-        <p className="text-sm text-gray-600">Room Code: {currentRoom.id}</p>
-        <p className="text-sm text-gray-600">
-          Status: {isConnected ? 'Connected' : 'Disconnected'}
-        </p>
-      </div>
+    <Box display="flex" flexDirection="column" height="100vh">
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div">
+            {currentRoom.name} (Room Code: {currentRoom.id}) -
+            {isConnected ? ' Connected' : ' Disconnected'}
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        {messages.map((msg, index) => (
-          <div key={msg.id || index} className="mb-4">
-            {msg.type === 'chat-message' && (
-              <div className="bg-white p-3 rounded shadow">
-                <p className="font-bold">{msg.sender}</p>
-                <p>{msg.text}</p>
-                <p className="text-xs text-gray-500">
-                  {new Date(msg.timestamp || 0).toLocaleTimeString()}
-                </p>
-              </div>
-            )}
-            {msg.type === 'user-joined' && (
-              <p className="text-sm text-gray-600">
-                {msg.username} joined the chat
-              </p>
-            )}
-            {msg.type === 'user-left' && (
-              <p className="text-sm text-gray-600">
-                {msg.username} left the chat
-              </p>
-            )}
-            {msg.type === 'error' && (
-              <p className="text-sm text-red-600">{msg.message}</p>
-            )}
-          </div>
-        ))}
-      </div>
+      <Box flex={1} overflow="auto" p={2}>
+        <List>
+          {messages.map((msg, index) => (
+            <ListItem key={msg.id || index} alignItems="flex-start">
+              {msg.type === 'chat-message' && (
+                <ListItemText
+                  primary={`${msg.sender}`}
+                  secondary={
+                    <>
+                      <Typography variant="body2">{msg.text}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(msg.timestamp || 0).toLocaleTimeString()}
+                      </Typography>
+                    </>
+                  }
+                />
+              )}
+              {msg.type === 'user-joined' && (
+                <ListItemText secondary={`${msg.username} joined the chat`} />
+              )}
+              {msg.type === 'user-left' && (
+                <ListItemText secondary={`${msg.username} left the chat`} />
+              )}
+              {msg.type === 'error' && (
+                <ListItemText
+                  secondary={msg.message}
+                  primaryTypographyProps={{ color: 'error' }}
+                />
+              )}
+            </ListItem>
+          ))}
+        </List>
+      </Box>
 
-      <form onSubmit={handleSubmit} className="p-4 bg-white shadow">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="flex-1 p-2 border rounded"
-            placeholder="Type a message..."
-          />
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Send
-          </button>
-        </div>
-      </form>
-    </div>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        p={2}
+        display="flex"
+        gap={2}
+      >
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Type a message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <Button type="submit" variant="contained" color="primary">
+          Send
+        </Button>
+      </Box>
+    </Box>
   );
 }
